@@ -1,4 +1,5 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import { cartsModel } from "../dao/models/cartsModel.js";
 
 const router = Router();
@@ -8,75 +9,59 @@ const router = Router();
 
 //* Listar todos los carritos
 router.get("/", async (req, res) => {
-  let carrito= await cartsModel.find({})
-  res.send({
-    result:"success",
-    carts:carrito
-  });
+  await cartsModel
+    .find({})
+    .then((carrito) => {
+      if (carrito.length == 0) throw new Error("required");
+      res.status(200).send({
+        result: "success",
+        carts: carrito,
+      });
+    })
+    .catch((err) => {
+      res.status(400).send(`No hay ningún carrito`);
+    });
 });
 //* Crear nuevos carritos
 router.post("/", async (req, res) => {
   const nuevoCarrito = {
     products: [],
   };
-  let result=await cartsModel.create(nuevoCarrito)
-  res.send({
-    result:"success",
-    payload:result
+  let result = await cartsModel.create(nuevoCarrito);
+  res.status(200).send({
+    result: "success",
+    payload: result,
   });
 });
 
 //*Buscar carrito por id y mostrarlo
 router.get("/:cid", async (req, res) => {
-  let id=req.params.cid
-  let carrito= await cartsModel.find({_id:id})
-  res.send({
-    result:"success",
-    payload:carrito
-  });
-});
-
-
-
-
-router.post("/:cid/products/:pid", async (req, res) => {
-  if (req.params.cid && req.params.pid) {
-    let idCarrito;
-    let idProducto;
-    if (
-      (await carrito.getCart(req.params.cid)) ==
-      `Not found, carrito no encontrado, verifique el id ingresado`
-    ) {
-      idCarrito = false;
+  let id = req.params.cid;
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    let carrito = await cartsModel.find({ _id: id });
+    if (carrito.length > 0) {
+      res.status(200).send({
+        result: "success",
+        payload: carrito,
+      });
     } else {
-      idCarrito = true;
-    }
-    if (
-      (await  await cartsModel.find({_id:req.params.cid})) ==
-      `Not found, producto no encontrado`
-    ) {
-      idProducto = false;
-    } else {
-      idProducto = true;
-    }
-    if (idProducto && idCarrito) {
-      await carrito.addProductInCart(req.params.cid, req.params.pid);
-      res.send(`Producto agregado con exito`);
-    } else if (idCarrito) {
-      res.send(
-        `El id del carrito es correcto, pero el del producto es incorrecto.`
-      );
-    } else if (idProducto) {
-      res.send(
-        `El id del producto es correcto, pero el del carrito es incorrecto.`
-      );
-    } else {
-      res.send(`Ambos id son incorrectos`);
+      res.status(400).send("Carrito no encontrado");
     }
   } else {
-    res.send(
-      `Porfavor envia todos los parametros para poder agregar al carrito`
-    );
+    res.status(400).send("Coloca un id valido");
+  }
+});
+
+router.post("/:cid/products/:pid", async (req, res) => {
+  let carritoId = req.params.cid;
+  let productoId = req.params.pid;
+
+  if (
+    mongoose.Types.ObjectId.isValid(carritoId) &&
+    mongoose.Types.ObjectId.isValid(productoId)
+  ) {
+  } else {
+    res.status(400).send(`Coloca id válidos`);
   }
 });
 

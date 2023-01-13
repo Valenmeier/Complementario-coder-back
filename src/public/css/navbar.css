@@ -17,6 +17,7 @@
   top: 0;
   left: 0;
   overflow: hidden;
+  border-bottom: .2vw solid #00ffff;
 }
 .navbarGeneral img {
   display: flex;

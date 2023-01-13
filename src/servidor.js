@@ -8,38 +8,48 @@ import _dirname from "./utils.js";
 import productsRouter from "./routes/productRoutes.js";
 import cartsRouter from "./routes/cartRoutes.js";
 import homeHandlebar from "./routes/viewRoutes.js";
+import dotenv from "dotenv";
+import { productsModel } from "./dao/models/productsModel.js";
+dotenv.config();
+
 // import productosEnEmpresa from "./dao/filesystem/manangers/productMananger.js";
 // const productMananger = productosEnEmpresa;
-
 // let data = await productMananger.getProducts();
 
 const app = express();
+const port = process.env.PORT || 8080;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(_dirname + `/public`));
 
 mongoose.set("strictQuery", false);
-await mongoose.connect(
-  "mongodb+srv://ValentinMeier:SimonYChochona@meierbackend.fbgyjra.mongodb.net/ecommerce?retryWrites=true&w=majority"
-);
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("Conectado a Mongo Atlas"))
+  .catch((err) =>
+    console.error("A ocurrido un erro conectandose a mongo atlas")
+  );
 
-const httpServer = app.listen(8080, () => {
+const httpServer = app.listen(port, () => {
   console.log(`servidor escuchando en el puerto 8080`);
 });
-const socketServer = new Server(httpServer);
+const io = new Server(httpServer);
 
 app.engine(`handlebars`, handlebars.engine());
 app.set(`views`, "src/views");
 app.set(`view engine`, `handlebars`);
 
-
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/", homeHandlebar);
 
-socketServer.on(`connection`, async (socket) => {
+io.on(`connection`, async (socket) => {
   console.log(`Nuevo cliente conectado`);
-  socket.emit(`datos`, await data);
-});
+  socket.emit(`datos`, await productsModel.find());
 
+  socket.emit("messages",{
+    user:"Valentin",
+    message:"Hola mundo"
+  })
+});

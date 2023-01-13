@@ -1,0 +1,22 @@
+.chatWrapper{
+    background-color: rgb(0, 0, 0);
+    margin-top: 10vh;
+    width: 100vw;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+
+.contenedorMsg{
+    height: 98%;
+    width: 80%;
+    background-color: rgb(48, 9, 9);
+    display: flex;
+}
+.contenedorChats{
+    background-color: rgb(49, 25, 25);
+    width: 34%;
+    height: 100%;
+}
