@@ -9,7 +9,9 @@ import productsRouter from "./routes/productRoutes.js";
 import cartsRouter from "./routes/cartRoutes.js";
 import homeHandlebar from "./routes/viewRoutes.js";
 import dotenv from "dotenv";
+//* Models
 import { productsModel } from "./dao/models/productsModel.js";
+import { messagesModel } from "./dao/models/messagesModel.js";
 dotenv.config();
 
 // import productosEnEmpresa from "./dao/filesystem/manangers/productMananger.js";
@@ -47,9 +49,9 @@ app.use("/", homeHandlebar);
 io.on(`connection`, async (socket) => {
   console.log(`Nuevo cliente conectado`);
   socket.emit(`datos`, await productsModel.find());
-
-  socket.emit("messages",{
-    user:"Valentin",
-    message:"Hola mundo"
+  socket.emit("messages", await messagesModel.find());
+  socket.on("newMessage",async (data)=>{
+    await messagesModel.insertMany([data])
+    io.emit("messages", await messagesModel.find())
   })
 });
